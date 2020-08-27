@@ -75,6 +75,7 @@ func (dataStore *dataStore) loadData() error {
 func main() {
 	filePath := flag.String("file", "data/data.json", "file to read JSON data from")
 	port := flag.Int("port", 8081, "port the server is running on")
+	flag.Parse()
 
 	dataStore := dataStore{
 		data:     make(map[string]interface{}),
