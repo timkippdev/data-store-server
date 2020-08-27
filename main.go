@@ -20,9 +20,9 @@ type data struct {
 
 type dataStore struct {
 	sync.RWMutex
-	data    map[string]interface{}
-	path    string
-	refresh time.Duration
+	data     map[string]interface{}
+	filePath string
+	refresh  time.Duration
 }
 
 func (dataStore *dataStore) GetValue(name string) interface{} {
@@ -50,7 +50,7 @@ func (dataStore *dataStore) Initialize() {
 }
 
 func (dataStore *dataStore) loadData() error {
-	fileContents, err := ioutil.ReadFile(dataStore.path)
+	fileContents, err := ioutil.ReadFile(dataStore.filePath)
 	if err != nil {
 		return err
 	}
@@ -60,23 +60,26 @@ func (dataStore *dataStore) loadData() error {
 		return err
 	}
 
-	dataStore.Lock()
+	newData := make(map[string]interface{})
 	for _, d := range data {
-		dataStore.data[d.Name] = d.Value
+		newData[d.Name] = d.Value
 	}
+
+	dataStore.Lock()
+	dataStore.data = newData
 	dataStore.Unlock()
 
 	return nil
 }
 
 func main() {
-	path := flag.String("f", "data.json", "file to read JSON data from")
-	port := flag.Int("p", 8081, "port the server is running on")
+	filePath := flag.String("file", "data/data.json", "file to read JSON data from")
+	port := flag.Int("port", 8081, "port the server is running on")
 
 	dataStore := dataStore{
-		data: make(map[string]interface{}),
-		path: *path,
-		// refresh: time.Second * 5,
+		data:     make(map[string]interface{}),
+		filePath: *filePath,
+		refresh:  time.Second * 30,
 	}
 	dataStore.Initialize()
 
